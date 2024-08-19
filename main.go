@@ -12,7 +12,8 @@ func main() {
 	database.InitDB()
 
 	e := echo.New()
-	routes.Setuproutes(e)
+
+	routes.SetupRoutes(e)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

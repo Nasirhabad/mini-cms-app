@@ -1,12 +1,64 @@
 package routes
 
-import "github.com/labstack/echo/v4"
+import (
+	"mini-cms-api/controllers"
+	"mini-cms-api/middlewares"
+	"mini-cms-api/models"
+	"mini-cms-api/utils"
 
-func Setuproutes(e *echo.Echo) {
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+)
+
+func SetupRoutes(e *echo.Echo) {
+	// initialize logger middleware
+	LoggerConfig := middlewares.LoggerConfig{
+		Format: "[${time_rfc3339}] ${status} ${method} ${host} ${path} ${latency_human}" + "\n",
+	}
+
+	loggerMiddleware := LoggerConfig.Init()
+	e.Use(loggerMiddleware)
+
+	// initialize authentication middleware
+
+	jwtConfig := middlewares.JWTConfig{
+		SecretKey: utils.GetConfig("JWT_SECRET_KEY"),
+	}
+	authMiddlewareConfig := jwtConfig.Init()
+
+	jwtOptions := models.JWTOptions{
+		SecretKey:       utils.GetConfig("JWT_SECRET_KEY"),
+		ExpiredDuration: 1,
+	}
+
+	// user routes
+	userController := controllers.InitUserController(jwtOptions)
+	userRoutes := e.Group("/api/v1/users")
+
+	userRoutes.POST("/register", userController.Register)
+	userRoutes.POST("/login", userController.Login)
+	userRoutes.GET(
+		"/info",
+		userController.GetUserInfo,
+		echojwt.WithConfig(authMiddlewareConfig),
+		middlewares.VerifyToken,
+	)
+
+	// category routes
+	categoryController := controllers.InitCategoryController()
+
+	categoryRoutes := e.Group("/api/v1", echojwt.WithConfig(authMiddlewareConfig), middlewares.VerifyToken)
+
+	categoryRoutes.GET("/categories", categoryController.Getall)
+	categoryRoutes.GET("/categories/:id", categoryController.GetByID)
+	categoryRoutes.POST("/categories", categoryController.Create)
+	categoryRoutes.PUT("/categories/:id", categoryController.Update)
+	categoryRoutes.DELETE("/categories/:id", categoryController.Delete)
+
 	// content routes
-	contentController := controllers.Initcontentcontroller()
+	contentController := controllers.InitContentController()
 
-	contentRoutes := e.Group("/api/v1")
+	contentRoutes := e.Group("/api/v1", echojwt.WithConfig(authMiddlewareConfig), middlewares.VerifyToken)
 
 	contentRoutes.GET("/contents", contentController.Getall)
 	contentRoutes.GET("/contents/:id", contentController.GetByID)

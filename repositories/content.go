@@ -1,23 +1,22 @@
 package repositories
 
 import (
-	"errors"
 	"mini-cms-api/database"
 	"mini-cms-api/models"
 )
 
-type contentRepositoryImpl struct{}
+type ContentRepositoryImpl struct{}
 
-func InitContentRepository() contentRepository {
-	return &contentRepositoryImpl{}
+func InitContentRepository() ContentRepository {
+	return &ContentRepositoryImpl{}
 
 }
 
 func (cr *ContentRepositoryImpl) Getall() ([]models.Content, error) {
 	var contents []models.Content
 
-	if err := database.DB.Find(&contents) .Error; err != nil {
-		return [] models.Content{}, err
+	if err := database.DB.Find(&contents).Error; err != nil {
+		return []models.Content{}, err
 	}
 
 	return contents, nil
@@ -33,44 +32,47 @@ func (cr *ContentRepositoryImpl) GetByID(id string) (models.Content, error) {
 	return content, nil
 }
 func (cr *ContentRepositoryImpl) Create(contentReq models.ContentRequest) (models.Content, error) {
-	var content models.Content =models.Content {
-		Title: contentReq.Title,
-		Decription : contentReq.Description,
+	var content models.Content = models.Content{
+		Title:       contentReq.Title,
+		Description: contentReq.Description,
+		CategoryID:  contentReq.CategoryID,
 	}
 	result := database.DB.Create(&content)
-	if err := result.Error != nil {
+
+	if err := result.Error; err != nil {
+
 		return models.Content{}, err
 	}
-	if err := result.Last(&content).Error; != nil {
+	if err := result.Last(&content).Error; err != nil {
 		return models.Content{}, err
 	}
 	return content, nil
 }
 
 func (cr *ContentRepositoryImpl) Update(contentReq models.ContentRequest, id string) (models.Content, error) {
-	content. err := cr.GetByID(id)
+	content, err := cr.GetByID(id)
 
-	if err != nil{
+	if err != nil {
 		return models.Content{}, err
 
 	}
-	content.title = contentReq.title
+	content.Title = contentReq.Title
 	content.Description = contentReq.Description
 
-	database.DB.Save(&content). Error; err != nil {
-		return models.coontent{}, err
+	if err := database.DB.Save(&content).Error; err != nil {
+		return models.Content{}, err
 	}
-	return content, nil 
+	return content, nil
 
 }
 
 func (cr *ContentRepositoryImpl) Delete(id string) error {
 	content, err := cr.GetByID(id)
 
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	database.DB.Delete(&content).Error; err != nil {
+	if err := database.DB.Delete(&content).Error; err != nil {
 		return err
 	}
 	return nil

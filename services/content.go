@@ -5,32 +5,32 @@ import (
 	"mini-cms-api/repositories"
 )
 
-type Contentservice struct {
+type ContentService struct {
 	repository repositories.ContentRepository
 }
 
-func Initcontentservice() Contentservice {
-	return Contentservice{
+func InitContentService() ContentService {
+	return ContentService{
 		repository: &repositories.ContentRepositoryImpl{},
 	}
 }
 
-func (cs *Contentservice) Getall() ([]models.Content, error) {
+func (cs *ContentService) Getall() ([]models.Content, error) {
 	return cs.repository.Getall()
 }
 
-func (cs *Contentservice) GetByID(id string) (models.Content, error) {
+func (cs *ContentService) GetByID(id string) (models.Content, error) {
 	return cs.repository.GetByID(id)
 }
 
-func (cs *Contentservice) Create(contentReq models.ContentRequest) (models.Content, error) {
+func (cs *ContentService) Create(contentReq models.ContentRequest) (models.Content, error) {
 	return cs.repository.Create(contentReq)
 }
 
-func (cs *Contentservice) Update(contentReq models.ContentRequest, id string) (models.content, error) {
-	return cs.repository.Update(contentReq)
+func (cs *ContentService) Update(contentReq models.ContentRequest, id string) (models.Content, error) {
+	return cs.repository.Update(contentReq, id)
 }
 
-func (cs *Contentservice) Delete(id string) error {
-	return &cs.repository.Delete(id)
+func (cs *ContentService) Delete(id string) error {
+	return cs.repository.Delete(id)
 }

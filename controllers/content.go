@@ -12,9 +12,9 @@ type ContentController struct {
 	service services.Contentservice
 }
 
-func InitCcontentController() ContentController {
+func InitContentController() ContentController {
 	return ContentController{
-		service: services.Initcontentservice(),
+		service: services.InitContentService(),
 	}
 }
 
@@ -25,17 +25,16 @@ func (cc *ContentController) Getall(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError,models.Response[string]{
 			Status: "failed",
 			Massage : "error when fetching contents",
-			Data :   contents,
 		})
 	}
 
 	return c.JSON(http.StatusOK, models.Response[[]models.Content]{
-		Status : "success"
+		Status : "success",
 		Massage: "all contents",
 		Data:     contents,
 	})
 }
-func (cc .ContentController)GetByID( c echo.Context)error{
+func (cc .ContentController) GetByID( c echo.Context)error{
 	contentID := c.Param("id")
 
 	content, err := cc.service.GetByID(contentID)
@@ -57,12 +56,22 @@ func (cc * ContentController) Create (c echo.Context)error{
 	var contentReq models.ContentRequest
 
 	if err := c.Bind(&contentReq); err != nil {
-		return c.JSON(http.StatusBadRequest,madels.Response[string]{
+		return c.JSON(http.StatusBadRequest, madels.Response[string]{
 			status: "failde",
 			Massage; "invalid request",
 
 		})
 	}
+
+	err := contentReq.Validate()
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response[string]{
+			Status: "failed",
+			Massage: "please fill all the required fields",
+		})
+	}
+
 
 	content, err := cc.service.Create(contentReq)
 
@@ -84,16 +93,24 @@ func (cc *ContentController) Update (e echo.Context) error {
 	var contentReq models.ContentRequest
 
 	if err := c.Bind(&contentReq); err != nil {
-		return c.JSON(http.StatusBadRequest,madels.Response[string]{
+		return c.JSON(http.StatusBadRequest, madels.Response[string]{
 			status: "failde",
 			Massage; "invalid request",
-
 		})
 	}
 
 	contentID := c.Param("id")
 
-	cc.service.Update(contentReq, contentID)
+	err := contentReq.Validate()
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response[string]{
+			Status: "failed",
+			Massage: "please fill the required fields",
+		})
+	}
+
+	content, err := cc.service.Update(contentReq, contentID)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[string]{
@@ -110,11 +127,11 @@ func (cc *ContentController) Update (e echo.Context) error {
 }
 
 func (cc *ContentController) Delete(c echo.Context) error{
-	contentID := c.param("id")
+	contentID := c.Param("id")
 
 	err := cc.service.Delete(contentID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError,models.Response [string]{
+		return c.JSON(http.StatusInternalServerError, models.Response [string]{
 			Status: "failed",
 			Massage: "failed to delete content",
 		})
